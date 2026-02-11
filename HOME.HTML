@@ -1,12 +1,487 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-	<TITLE> TRIAL </TITLE>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Warehouse KPI Dashboard</title>
+  <style>
+    :root {
+      --bg: #f3f6fb;
+      --card: #ffffff;
+      --text: #1f2a37;
+      --muted: #5f6b7a;
+      --primary: #0b63f6;
+      --ok: #0a9e5a;
+      --warn: #e08e00;
+      --bad: #c62828;
+      --border: #dbe3ef;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    header {
+      background: linear-gradient(120deg, #0c56cf, #1378d4);
+      color: white;
+      padding: 22px 20px;
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: 1.7rem;
+    }
+
+    .subtitle {
+      margin: 0;
+      opacity: 0.95;
+      font-size: 0.95rem;
+    }
+
+    main {
+      max-width: 1200px;
+      margin: 16px auto;
+      padding: 0 12px 24px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(11, 41, 75, 0.05);
+      padding: 14px;
+    }
+
+    .card h2 {
+      margin-top: 0;
+      margin-bottom: 12px;
+      font-size: 1.15rem;
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+    }
+
+    .kpi {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px;
+      background: #fbfdff;
+    }
+
+    .kpi .label {
+      font-size: 0.83rem;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .kpi .value {
+      font-size: 1.4rem;
+      font-weight: bold;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 10px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 0.83rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #c9d5e7;
+      border-radius: 6px;
+      font-size: 0.9rem;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: none;
+      border-radius: 6px;
+      padding: 9px 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-secondary {
+      background: #eaf1ff;
+      color: #11439a;
+    }
+
+    .btn-danger {
+      background: #ffe7e7;
+      color: #8f1111;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      border-bottom: 1px solid #ecf1f8;
+      text-align: left;
+      padding: 8px;
+      vertical-align: top;
+    }
+
+    th {
+      font-size: 0.82rem;
+      color: var(--muted);
+      background: #fbfdff;
+      position: sticky;
+      top: 0;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      max-height: 340px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    .status-good { color: var(--ok); font-weight: bold; }
+    .status-warn { color: var(--warn); font-weight: bold; }
+    .status-bad { color: var(--bad); font-weight: bold; }
+
+    #trendCanvas {
+      width: 100%;
+      max-width: 100%;
+      background: #fafcff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      display: block;
+    }
+
+    .note {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 10px;
+    }
+  </style>
 </head>
 <body>
-<A HREF="https://tupmla-my.sharepoint.com/:u:/g/personal/ronnel_arbutante_tup_edu_ph/EYSFZxCjbRBGvkVQW8Vmz3gBf-rxv_uUeDhMJf8JASd3CA?e=o2mAmd"> PAGE 1 </A>
-<A HREF="https://tupmla-my.sharepoint.com/:u:/g/personal/ronnel_arbutante_tup_edu_ph/ER6_nbSxHAROq-OC-2qR9YgBMNg25XUegjRt3AXwgoNkJQ?e=9TyN84"> PAGE 2 </A>
+  <header>
+    <h1>Warehouse KPI Dashboard</h1>
+    <p class="subtitle">Track daily operations and enter department data in one page.</p>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2>Key Performance Indicators</h2>
+      <div class="kpi-grid">
+        <div class="kpi"><div class="label">Total Inbound Units</div><div class="value" id="kpiInbound">0</div></div>
+        <div class="kpi"><div class="label">Total Outbound Units</div><div class="value" id="kpiOutbound">0</div></div>
+        <div class="kpi"><div class="label">Net Movement</div><div class="value" id="kpiNet">0</div></div>
+        <div class="kpi"><div class="label">Avg On-Time Shipping</div><div class="value" id="kpiOnTime">0%</div></div>
+        <div class="kpi"><div class="label">Avg Picking Accuracy</div><div class="value" id="kpiAccuracy">0%</div></div>
+        <div class="kpi"><div class="label">Safety Incidents</div><div class="value" id="kpiIncidents">0</div></div>
+      </div>
+      <p class="note">Status target: On-time shipping ≥ 95%, accuracy ≥ 98%, incidents = 0.</p>
+    </section>
+
+    <section class="card">
+      <h2>Daily Data Entry</h2>
+      <form id="entryForm">
+        <div class="form-grid">
+          <div>
+            <label for="entryDate">Date</label>
+            <input id="entryDate" name="entryDate" type="date" required />
+          </div>
+          <div>
+            <label for="shift">Shift</label>
+            <select id="shift" name="shift" required>
+              <option value="">Select shift</option>
+              <option>Morning</option>
+              <option>Afternoon</option>
+              <option>Night</option>
+            </select>
+          </div>
+          <div>
+            <label for="inbound">Inbound Units</label>
+            <input id="inbound" name="inbound" type="number" min="0" required />
+          </div>
+          <div>
+            <label for="outbound">Outbound Units</label>
+            <input id="outbound" name="outbound" type="number" min="0" required />
+          </div>
+          <div>
+            <label for="returns">Returns</label>
+            <input id="returns" name="returns" type="number" min="0" value="0" required />
+          </div>
+          <div>
+            <label for="damaged">Damaged Items</label>
+            <input id="damaged" name="damaged" type="number" min="0" value="0" required />
+          </div>
+          <div>
+            <label for="ontime">On-Time Shipping %</label>
+            <input id="ontime" name="ontime" type="number" min="0" max="100" required />
+          </div>
+          <div>
+            <label for="accuracy">Picking Accuracy %</label>
+            <input id="accuracy" name="accuracy" type="number" min="0" max="100" required />
+          </div>
+          <div>
+            <label for="incidents">Safety Incidents</label>
+            <input id="incidents" name="incidents" type="number" min="0" value="0" required />
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn-primary" type="submit">Save Entry</button>
+          <button class="btn-secondary" type="button" id="loadSampleBtn">Load Sample Data</button>
+          <button class="btn-danger" type="button" id="clearBtn">Clear All Data</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2>Outbound Units Trend (Last 10 Entries)</h2>
+      <canvas id="trendCanvas" width="1100" height="240" aria-label="Outbound trend chart"></canvas>
+    </section>
+
+    <section class="card">
+      <h2>Data Log</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Shift</th>
+              <th>Inbound</th>
+              <th>Outbound</th>
+              <th>Returns</th>
+              <th>Damaged</th>
+              <th>On-Time</th>
+              <th>Accuracy</th>
+              <th>Incidents</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="entriesBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const STORAGE_KEY = "warehouse-kpi-entries";
+
+    const entryForm = document.getElementById("entryForm");
+    const entriesBody = document.getElementById("entriesBody");
+    const clearBtn = document.getElementById("clearBtn");
+    const loadSampleBtn = document.getElementById("loadSampleBtn");
+
+    const kpiInbound = document.getElementById("kpiInbound");
+    const kpiOutbound = document.getElementById("kpiOutbound");
+    const kpiNet = document.getElementById("kpiNet");
+    const kpiOnTime = document.getElementById("kpiOnTime");
+    const kpiAccuracy = document.getElementById("kpiAccuracy");
+    const kpiIncidents = document.getElementById("kpiIncidents");
+
+    function getEntries() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveEntries(entries) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+    }
+
+    function statusClass(entry) {
+      if (entry.incidents > 0 || entry.damaged > 5) return "status-bad";
+      if (entry.ontime < 95 || entry.accuracy < 98) return "status-warn";
+      return "status-good";
+    }
+
+    function statusText(entry) {
+      if (entry.incidents > 0 || entry.damaged > 5) return "Needs Action";
+      if (entry.ontime < 95 || entry.accuracy < 98) return "Watch";
+      return "On Target";
+    }
+
+    function renderKpis(entries) {
+      const count = entries.length || 1;
+      const totalInbound = entries.reduce((sum, e) => sum + e.inbound, 0);
+      const totalOutbound = entries.reduce((sum, e) => sum + e.outbound, 0);
+      const totalOnTime = entries.reduce((sum, e) => sum + e.ontime, 0);
+      const totalAccuracy = entries.reduce((sum, e) => sum + e.accuracy, 0);
+      const totalIncidents = entries.reduce((sum, e) => sum + e.incidents, 0);
+
+      kpiInbound.textContent = totalInbound.toLocaleString();
+      kpiOutbound.textContent = totalOutbound.toLocaleString();
+      kpiNet.textContent = (totalInbound - totalOutbound).toLocaleString();
+      kpiOnTime.textContent = `${(totalOnTime / count).toFixed(1)}%`;
+      kpiAccuracy.textContent = `${(totalAccuracy / count).toFixed(1)}%`;
+      kpiIncidents.textContent = totalIncidents.toLocaleString();
+    }
+
+    function drawTrend(entries) {
+      const canvas = document.getElementById("trendCanvas");
+      const ctx = canvas.getContext("2d");
+      const data = entries.slice(-10);
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#3e7de5";
+      ctx.font = "12px Arial";
+
+      if (!data.length) {
+        ctx.fillStyle = "#607086";
+        ctx.fillText("No data yet. Add entries to view trend.", 20, 30);
+        return;
+      }
+
+      const maxVal = Math.max(...data.map((d) => d.outbound), 1);
+      const chartLeft = 40;
+      const chartBottom = canvas.height - 30;
+      const chartWidth = canvas.width - 60;
+      const chartHeight = canvas.height - 60;
+      const barGap = 12;
+      const barWidth = (chartWidth - barGap * (data.length - 1)) / data.length;
+
+      ctx.strokeStyle = "#aebbd0";
+      ctx.beginPath();
+      ctx.moveTo(chartLeft, 20);
+      ctx.lineTo(chartLeft, chartBottom);
+      ctx.lineTo(canvas.width - 20, chartBottom);
+      ctx.stroke();
+
+      data.forEach((item, i) => {
+        const x = chartLeft + i * (barWidth + barGap);
+        const h = (item.outbound / maxVal) * chartHeight;
+        const y = chartBottom - h;
+
+        ctx.fillStyle = "#2f6fe0";
+        ctx.fillRect(x, y, barWidth, h);
+
+        ctx.fillStyle = "#4c5f75";
+        ctx.save();
+        ctx.translate(x + barWidth / 2, chartBottom + 12);
+        ctx.rotate(-0.4);
+        ctx.fillText(item.date.slice(5), -16, 0);
+        ctx.restore();
+
+        ctx.fillStyle = "#15345e";
+        ctx.fillText(String(item.outbound), x + 4, y - 6);
+      });
+    }
+
+    function renderTable(entries) {
+      entriesBody.innerHTML = "";
+      entries
+        .map((entry, index) => ({ entry, index }))
+        .sort((a, b) => b.entry.date.localeCompare(a.entry.date))
+        .forEach((row) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${row.entry.date}</td>
+            <td>${row.entry.shift}</td>
+            <td>${row.entry.inbound}</td>
+            <td>${row.entry.outbound}</td>
+            <td>${row.entry.returns}</td>
+            <td>${row.entry.damaged}</td>
+            <td>${row.entry.ontime}%</td>
+            <td>${row.entry.accuracy}%</td>
+            <td>${row.entry.incidents}</td>
+            <td class="${statusClass(row.entry)}">${statusText(row.entry)}</td>
+            <td><button class="btn-danger" data-index="${row.index}" type="button">Delete</button></td>
+          `;
+          entriesBody.appendChild(tr);
+        });
+
+      entriesBody.querySelectorAll("button[data-index]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const idx = Number(btn.getAttribute("data-index"));
+          const liveEntries = getEntries();
+          liveEntries.splice(idx, 1);
+          saveEntries(liveEntries);
+          render();
+        });
+      });
+    }
+
+    function render() {
+      const entries = getEntries();
+      renderKpis(entries);
+      renderTable(entries);
+      drawTrend(entries);
+    }
+
+    entryForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const data = new FormData(entryForm);
+      const entry = {
+        date: data.get("entryDate"),
+        shift: data.get("shift"),
+        inbound: Number(data.get("inbound")),
+        outbound: Number(data.get("outbound")),
+        returns: Number(data.get("returns")),
+        damaged: Number(data.get("damaged")),
+        ontime: Number(data.get("ontime")),
+        accuracy: Number(data.get("accuracy")),
+        incidents: Number(data.get("incidents"))
+      };
+
+      const entries = getEntries();
+      entries.push(entry);
+      saveEntries(entries);
+      entryForm.reset();
+      render();
+    });
+
+    clearBtn.addEventListener("click", () => {
+      if (confirm("Are you sure you want to remove all warehouse entries?")) {
+        localStorage.removeItem(STORAGE_KEY);
+        render();
+      }
+    });
+
+    loadSampleBtn.addEventListener("click", () => {
+      const sample = [
+        { date: "2026-02-07", shift: "Morning", inbound: 1200, outbound: 1080, returns: 15, damaged: 2, ontime: 97, accuracy: 99, incidents: 0 },
+        { date: "2026-02-08", shift: "Afternoon", inbound: 980, outbound: 1050, returns: 20, damaged: 4, ontime: 95, accuracy: 98, incidents: 0 },
+        { date: "2026-02-09", shift: "Night", inbound: 1100, outbound: 1002, returns: 12, damaged: 1, ontime: 96, accuracy: 99, incidents: 0 },
+        { date: "2026-02-10", shift: "Morning", inbound: 1280, outbound: 1188, returns: 28, damaged: 6, ontime: 92, accuracy: 97, incidents: 1 }
+      ];
+      saveEntries(sample);
+      render();
+    });
+
+    render();
+  </script>
 </body>
 </html>
-
-
